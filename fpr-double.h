@@ -40,6 +40,7 @@
 #ifndef FPC
 
 #include <math.h>
+#include <x86intrin.h>
 
 typedef struct { double v; } fpr;
 
@@ -187,39 +188,42 @@ fpr_lt(fpr x, fpr y)
 static inline fpr
 fpr_exp_small(fpr x)
 {
-	/*
-	 * The algorithm used below is derived from the public domain
-	 * library fdlibm (http://www.netlib.org/fdlibm/e_exp.c).
-	 *
-	 * We compute exp(x/2) to make sure that the value is in the
-	 * proper range for the polynomial approximation, then square
-	 * it to get exp(x).
-	 *
-	 * This is constant-time IF the base floating-point operations
-	 * are constant-time (which is a big "if", especially for the
-	 * division operation).
-	 */
-#define FPR_P1   ( 1.66666666666666019037e-01)
-#define FPR_P2   (-2.77777777770155933842e-03)
-#define FPR_P3   ( 6.61375632143793436117e-05)
-#define FPR_P4   (-1.65339022054652515390e-06)
-#define FPR_P5   ( 4.13813679705723846039e-08)
+	/* coefficients of the exp evaluation polynomial */
+	static const __m128i EXP_COFF[] = {{0x3e21d0460e8dcd27, 0},
+									   {0x3e5b2a467e033000, 0},
+									   {0x3e927ee5f8a05035, 0},
+									   {0x3ec71d939de045c4, 0},
+									   {0x3efa019eb1edf088, 0},
+									   {0x3f2a01a073de5b8f, 0},
+									   {0x3f56c16c182d87f5, 0},
+									   {0x3f81111110e066fd, 0},
+									   {0x3fa5555555541c3c, 0},
+									   {0x3fc55555555581ff, 0},
+									   {0x3fe00000000000ad, 0},
+									   {0x3fefffffffffffd2, 0},
+									   {0x3ff0000000000000, 0}};								   
 
-	double s, t, c;
-
-	s = x.v;
-	s *= 0.5;
-	t = s * s;
-	c = s - t * (FPR_P1 + t * (FPR_P2
-		+ t * (FPR_P3 + t * (FPR_P4 + t * FPR_P5))));
-	s = 1.0 - ((s * c) / (c - 2.0) - s);
-	return FPR(s * s);
-
-#undef FPR_P1
-#undef FPR_P2
-#undef FPR_P3
-#undef FPR_P4
-#undef FPR_P5
+	__m128d vx, vsum;
+	double res;
+	
+	vx = _mm_load_sd(&(x.v));
+	
+	vsum = _mm_add_sd(_mm_mul_sd(_mm_castsi128_pd(EXP_COFF[0]), vx), _mm_castsi128_pd(EXP_COFF[1]));
+	vsum = _mm_add_sd(_mm_mul_sd(vsum, vx), _mm_castsi128_pd(EXP_COFF[2]));
+	vsum = _mm_add_sd(_mm_mul_sd(vsum, vx), _mm_castsi128_pd(EXP_COFF[3]));
+	vsum = _mm_add_sd(_mm_mul_sd(vsum, vx), _mm_castsi128_pd(EXP_COFF[4]));
+	vsum = _mm_add_sd(_mm_mul_sd(vsum, vx), _mm_castsi128_pd(EXP_COFF[5]));
+	vsum = _mm_add_sd(_mm_mul_sd(vsum, vx), _mm_castsi128_pd(EXP_COFF[6]));
+	vsum = _mm_add_sd(_mm_mul_sd(vsum, vx), _mm_castsi128_pd(EXP_COFF[7]));
+	vsum = _mm_add_sd(_mm_mul_sd(vsum, vx), _mm_castsi128_pd(EXP_COFF[8]));
+	vsum = _mm_add_sd(_mm_mul_sd(vsum, vx), _mm_castsi128_pd(EXP_COFF[9]));
+	vsum = _mm_add_sd(_mm_mul_sd(vsum, vx), _mm_castsi128_pd(EXP_COFF[10]));
+	vsum = _mm_add_sd(_mm_mul_sd(vsum, vx), _mm_castsi128_pd(EXP_COFF[11]));
+	vsum = _mm_add_sd(_mm_mul_sd(vsum, vx), _mm_castsi128_pd(EXP_COFF[12]));
+	
+	res = _mm_cvtsd_f64(vsum);
+	
+	return FPR(res);	
 }
 
 static inline void
