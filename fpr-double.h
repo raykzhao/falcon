@@ -189,37 +189,37 @@ static inline fpr
 fpr_exp_small(fpr x)
 {
 	/* coefficients of the exp evaluation polynomial */
-	static const __m128i EXP_COFF[] = {{0x3e21d0460e8dcd27, 0},
-									   {0x3e5b2a467e033000, 0},
-									   {0x3e927ee5f8a05035, 0},
-									   {0x3ec71d939de045c4, 0},
-									   {0x3efa019eb1edf088, 0},
-									   {0x3f2a01a073de5b8f, 0},
-									   {0x3f56c16c182d87f5, 0},
-									   {0x3f81111110e066fd, 0},
-									   {0x3fa5555555541c3c, 0},
-									   {0x3fc55555555581ff, 0},
-									   {0x3fe00000000000ad, 0},
-									   {0x3fefffffffffffd2, 0},
-									   {0x3ff0000000000000, 0}};								   
+	static const uint64_t EXP_COFF[] = {0x3e21d0460e8dcd27,
+										0x3e5b2a467e033000,
+										0x3e927ee5f8a05035,
+										0x3ec71d939de045c4,
+										0x3efa019eb1edf088,
+										0x3f2a01a073de5b8f,
+										0x3f56c16c182d87f5,
+										0x3f81111110e066fd,
+										0x3fa5555555541c3c,
+										0x3fc55555555581ff,
+										0x3fe00000000000ad,
+										0x3fefffffffffffd2,
+										0x3ff0000000000000};								   
 
 	__m128d vx, vsum;
 	double res;
 	
 	vx = _mm_load_sd(&(x.v));
 	
-	vsum = _mm_add_sd(_mm_mul_sd(_mm_castsi128_pd(EXP_COFF[0]), vx), _mm_castsi128_pd(EXP_COFF[1]));
-	vsum = _mm_add_sd(_mm_mul_sd(vsum, vx), _mm_castsi128_pd(EXP_COFF[2]));
-	vsum = _mm_add_sd(_mm_mul_sd(vsum, vx), _mm_castsi128_pd(EXP_COFF[3]));
-	vsum = _mm_add_sd(_mm_mul_sd(vsum, vx), _mm_castsi128_pd(EXP_COFF[4]));
-	vsum = _mm_add_sd(_mm_mul_sd(vsum, vx), _mm_castsi128_pd(EXP_COFF[5]));
-	vsum = _mm_add_sd(_mm_mul_sd(vsum, vx), _mm_castsi128_pd(EXP_COFF[6]));
-	vsum = _mm_add_sd(_mm_mul_sd(vsum, vx), _mm_castsi128_pd(EXP_COFF[7]));
-	vsum = _mm_add_sd(_mm_mul_sd(vsum, vx), _mm_castsi128_pd(EXP_COFF[8]));
-	vsum = _mm_add_sd(_mm_mul_sd(vsum, vx), _mm_castsi128_pd(EXP_COFF[9]));
-	vsum = _mm_add_sd(_mm_mul_sd(vsum, vx), _mm_castsi128_pd(EXP_COFF[10]));
-	vsum = _mm_add_sd(_mm_mul_sd(vsum, vx), _mm_castsi128_pd(EXP_COFF[11]));
-	vsum = _mm_add_sd(_mm_mul_sd(vsum, vx), _mm_castsi128_pd(EXP_COFF[12]));
+	vsum = _mm_add_sd(_mm_mul_sd(_mm_castsi128_pd(_mm_cvtsi64x_si128(EXP_COFF[0])), vx), _mm_castsi128_pd(_mm_cvtsi64x_si128(EXP_COFF[1])));
+	vsum = _mm_add_sd(_mm_mul_sd(vsum, vx), _mm_castsi128_pd(_mm_cvtsi64x_si128(EXP_COFF[2])));
+	vsum = _mm_add_sd(_mm_mul_sd(vsum, vx), _mm_castsi128_pd(_mm_cvtsi64x_si128(EXP_COFF[3])));
+	vsum = _mm_add_sd(_mm_mul_sd(vsum, vx), _mm_castsi128_pd(_mm_cvtsi64x_si128(EXP_COFF[4])));
+	vsum = _mm_add_sd(_mm_mul_sd(vsum, vx), _mm_castsi128_pd(_mm_cvtsi64x_si128(EXP_COFF[5])));
+	vsum = _mm_add_sd(_mm_mul_sd(vsum, vx), _mm_castsi128_pd(_mm_cvtsi64x_si128(EXP_COFF[6])));
+	vsum = _mm_add_sd(_mm_mul_sd(vsum, vx), _mm_castsi128_pd(_mm_cvtsi64x_si128(EXP_COFF[7])));
+	vsum = _mm_add_sd(_mm_mul_sd(vsum, vx), _mm_castsi128_pd(_mm_cvtsi64x_si128(EXP_COFF[8])));
+	vsum = _mm_add_sd(_mm_mul_sd(vsum, vx), _mm_castsi128_pd(_mm_cvtsi64x_si128(EXP_COFF[9])));
+	vsum = _mm_add_sd(_mm_mul_sd(vsum, vx), _mm_castsi128_pd(_mm_cvtsi64x_si128(EXP_COFF[10])));
+	vsum = _mm_add_sd(_mm_mul_sd(vsum, vx), _mm_castsi128_pd(_mm_cvtsi64x_si128(EXP_COFF[11])));
+	vsum = _mm_add_sd(_mm_mul_sd(vsum, vx), _mm_castsi128_pd(_mm_cvtsi64x_si128(EXP_COFF[12])));
 	
 	res = _mm_cvtsd_f64(vsum);
 	
